@@ -4,7 +4,8 @@ import numpy as np
 
 def clean_state(dirty_state_df, state_to_scrape):
     cleaned_state_df = dirty_state_df.replace(
-        "Äì", " ").replace("î", "").replace("[i]", "").replace("[q]", "").replace("Ä", "")
+        "Äì", " ").replace("î", "").replace("[i]", "").replace("[q]", "").replace("Ä", "").replace(
+        "[al]", "").replace("—", "")
     cleaned_state_df = cleaned_state_df.assign(
         state=state_to_scrape,
         exit_year=cleaned_state_df.starting_year.shift(-1)
