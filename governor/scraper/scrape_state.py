@@ -3,6 +3,7 @@ from governor.scraper.clean_state import clean_state
 from selenium import webdriver
 import time
 import pandas as pd
+import numpy as np
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
@@ -41,7 +42,7 @@ def get_state_df_from_wikipedia(state_to_scrape):
     rows = table_body.find_all('tr')
 
     scraped_state_df = pd.DataFrame(
-        columns=["order", "name", "term", "party", "election_year", "starting_year", "lt_govnr"]
+        columns=["order", "name", "term", "party", "starting_year", "lt_govnr"]
     )
     print(f"mining governor data for {state_to_scrape}...")
     leftover_lt_govnrs = []
@@ -51,6 +52,7 @@ def get_state_df_from_wikipedia(state_to_scrape):
         cols = row.find_all("td")
         if len(cols) > 2:
             if len(leftover_lt_govnrs) >= 1:
+                leftover_lt_govnrs[len(leftover_lt_govnrs) - 1] = leftover_lt_govnrs[len(leftover_lt_govnrs) - 1][:-3]
                 scraped_state_df.iloc[df_row]["lt_govnr"] = scraped_state_df.iloc[
                     df_row]["lt_govnr"].join(leftover_lt_govnrs)
             leftover_lt_govnrs = []
@@ -62,7 +64,6 @@ def get_state_df_from_wikipedia(state_to_scrape):
                         "name": [cols[1]["data-sort-value"]],
                         "term": [cols[3].text.strip()],
                         "party": [cols[4].text.strip()],
-                        "election_year": [cols[5].text.strip()],
                         "starting_year": [cols[3].text.strip().split(",")[1].strip()[:4]]
                     }
                 )
@@ -81,7 +82,6 @@ def get_state_df_from_wikipedia(state_to_scrape):
                         "name": [cols[1]["data-sort-value"]],
                         "term": [cols[2].text.strip()],
                         "party": [cols[3].text.strip()],
-                        "election_year": [cols[4].text.strip()],
                         "starting_year": [cols[2].text.strip().split(",")[1].strip()[:4]]
                     }
                 )
@@ -94,16 +94,18 @@ def get_state_df_from_wikipedia(state_to_scrape):
                         lt_govnr=" "
                     )
             except KeyError:
-                df = pd.DataFrame(
-                    {
-                        "order": ["Civil War - Vacated Office"],
-                        "name": ["Civil War - Vacated Office"],
-                        "term": ["Civil War - Vacated Office"],
-                        "party": ["Civil War - Vacated Office"],
-                        "election_year": ["Civil War - Vacated Office"],
-                        "starting_year": ["Civil War - Vacated Office"]
-                    }
-                )
+                if i == len(rows):
+                    df = np.nan
+                else:
+                    df = pd.DataFrame(
+                        {
+                            "order": ["Vacated Office"],
+                            "name": ["Vacated Office"],
+                            "term": ["Vacated Office"],
+                            "party": ["Vacated Office"],
+                            "starting_year": ["Vacated Office"]
+                        }
+                    )
             scraped_state_df = scraped_state_df.append(df)
         else:
             try:
