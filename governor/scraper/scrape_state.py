@@ -36,12 +36,11 @@ def get_state_df_from_wikipedia(state_to_scrape):
     # match = soup.find_all("table", class_="wikitable sortable jquery-tablesorter", style="text-align:center;")
     match = soup.find_all("table", style="text-align:center;")
 
-    # if len(match) > 1:
-    # scrub out colonialism.
-    # if len(match) == 0:
-    #     match = soup.find_all("table", class_="wikitable", style="text-align:center;")
-
-    match = match[len(match) - 1]
+    try:
+        match = match[len(match) - 1]
+    except IndexError:
+        match = soup.find_all("table", style="text-align: center;")
+        match = match[len(match) - 1]
 
     table_body = match.find('tbody')
     rows = table_body.find_all('tr')
