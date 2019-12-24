@@ -55,3 +55,11 @@ STATES = {
     'Wisconsin': 'WI',
     'Wyoming': 'WY',
 }
+
+COL_FLAGS = {
+    "order": "No.|No|#",
+    "name": "Governor|name",
+    "party": "Party",
+    "term": "Years|Term of office|Term in office",
+    "lt_govnr": "(Lt.)(\w|\d|.)"
+}
