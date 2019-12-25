@@ -42,64 +42,17 @@ def get_state_df_from_wikipedia(state_to_scrape, col_flags=COL_FLAGS):
         if len(table.attrs) > 1:
             if ("wikitable" in table.attrs["class"][0]) & ("text-align:" in table.attrs["style"]):
                 match = table
+        else:
+            match = None
 
-    table_body = match.find('tbody')
-    rows = table_body.find_all('tr')
-
-    # find the location of each col of interest.
-    headers = rows[0].find_all('th')
-    col_key = {
-        "length": len(rows[1].find_all('td')),
-        "order": "no data",
-        "name": "no data",
-        "party": "no data",
-        "term": "no data",
-        "lt_govnr": "no data"
-    }
-
-    # todo reconfigure these as needed in a run through.
-    # match the columns to their locations by header
-    for header, idx in zip(headers, range(0, len(headers) - 1)):
-        print(header)
-        this_col = header.text.strip()
-        for col in col_flags.keys():
-            print(col)
-            if re.search(col_flags[col], this_col):
-                col_key[col] = idx - 1
-
-    scraped_state_df = pd.DataFrame(
-        columns=["starting_year"] + list(col_flags.keys())
-    )
-
+    col_key, rows, sortable = identify_columns(match, col_flags)
     print(f"mining governor data for {state_to_scrape}...")
-    leftover_lt_govnrs = []
-    for row, i in zip(rows, range(0, len(rows))):
-        cols = row.find_all("td")
-        # import pdb; pdb.set_trace()
-        if (len(cols) == col_key["length"]) | (len(cols) == col_key["length"] - 1):
-            df = pd.DataFrame(
-                {
-                    "order": [len(scraped_state_df)],
-                    "name": [cols[col_key["name"]].text.strip()],
-                    "term": [cols[col_key["term"]].text.strip()],
-                    "party": [cols[col_key["party"]].text.strip()],
-                    "starting_year": [cols[col_key["term"]].text.strip().split(",")[1].strip()[:4]],
-                }
-            )
-            if len(cols) == col_key["length"]:
-                leftover_lt_govnrs = []
-                df = df.assign(
-                    lt_govnr=cols[col_key["lt_govnr"]].text.strip().join(leftover_lt_govnrs)
-                )
-            else:
-                df = df.assign(
-                    lt_govnr=str(scraped_state_df.iloc[len(scraped_state_df) - 1]["lt_govnr"]).join(leftover_lt_govnrs)
-                )
 
-            scraped_state_df = scraped_state_df.append(df)
-        elif len(cols) >= 1:
-            leftover_lt_govnrs += [cols[len(cols) - 1].text.strip() + " | "]
-
+    if sortable:
+        print('this that has to be done.')
+        scraped_state_df = extract_sortable_table(rows, col_key, col_flags)
+    else:
+        scraped_state_df = extract_static_table(rows, col_key, col_flags)
 
     # todo I am here. ^ not working because of odd col.
 
@@ -231,6 +184,115 @@ def get_state_df_from_wikipedia(state_to_scrape, col_flags=COL_FLAGS):
     #                     int(cols[len(cols) - 1].text.strip())
     #                 except ValueError:
     #                     leftover_lt_govnrs += [cols[len(cols) - 1].text.strip() + " | "]
+
+    return scraped_state_df
+
+
+def identify_columns(table_object, col_flags=COL_FLAGS):
+    if table_object is not None:
+        bumper = 0
+        col_key = {
+            "length": "no data",
+            "order": "no data",
+            "name": "no data",
+            "party": "no data",
+            "term": "no data",
+            "lt_govnr": "no data"
+        }
+        table_body = table_object.find('tbody')
+        rows = table_body.find_all('tr')
+        if 'jquery-tablesorter' in table_object.attrs["class"]:
+            print("sortable pathway.")
+            table_head = table_object.find('thead')
+            headers = table_head.find_all('th')
+            sortable = True
+        else:
+            # this is the static table
+            # find the location of each col of interest.
+            headers = rows[0].find_all('th')
+            col_key["length"] = len(rows[1].find_all('td'))
+            sortable = False
+            bumper = 1
+
+        # match the columns to their locations by header
+        for header, idx in zip(headers, range(0, len(headers) - 1)):
+            print(header)
+            this_col = header.text.strip()
+            for col in col_flags.keys():
+                print(col)
+                if re.search(col_flags[col], this_col):
+                    col_key[col] = idx - bumper
+        return col_key, rows, sortable
+    else:
+        raise AssertionError("Table was not properly found on the web page.")
+
+
+def extract_sortable_table(rows, col_key, col_flags=COL_FLAGS):
+    scraped_state_df = pd.DataFrame(
+        columns=["starting_year"] + list(col_flags.keys())
+    )
+
+    leftover_lt_govnrs = []
+    for row, i in zip(rows, range(0, len(rows))):
+        cols = row.find_all("td")
+        # import pdb; pdb.set_trace()
+        if (len(cols) == col_key["length"]) | (len(cols) == col_key["length"] - 1):
+            df = pd.DataFrame(
+                {
+                    "order": [len(scraped_state_df)],
+                    "name": [cols[col_key["name"]].text.strip()],
+                    "term": [cols[col_key["term"]].text.strip()],
+                    "party": [cols[col_key["party"]].text.strip()],
+                    "starting_year": [cols[col_key["term"]].text.strip().split(",")[1].strip()[:4]],
+                }
+            )
+            if len(cols) == col_key["length"]:
+                leftover_lt_govnrs = []
+                df = df.assign(
+                    lt_govnr=cols[col_key["lt_govnr"]].text.strip().join(leftover_lt_govnrs)
+                )
+            else:
+                df = df.assign(
+                    lt_govnr=str(scraped_state_df.iloc[len(scraped_state_df) - 1]["lt_govnr"]).join(leftover_lt_govnrs)
+                )
+
+            scraped_state_df = scraped_state_df.append(df)
+        elif len(cols) >= 1:
+            leftover_lt_govnrs += [cols[len(cols) - 1].text.strip() + " | "]
+
+
+def extract_static_table(rows, col_key, col_flags=COL_FLAGS):
+    scraped_state_df = pd.DataFrame(
+        columns=["starting_year"] + list(col_flags.keys())
+    )
+
+    leftover_lt_govnrs = []
+    for row, i in zip(rows, range(0, len(rows))):
+        cols = row.find_all("td")
+        # import pdb; pdb.set_trace()
+        if (len(cols) == col_key["length"]) | (len(cols) == col_key["length"] - 1):
+            df = pd.DataFrame(
+                {
+                    "order": [len(scraped_state_df)],
+                    "name": [cols[col_key["name"]]["data-sort-value"]],
+                    "term": [cols[col_key["term"]].text.strip()],
+                    "party": [cols[col_key["party"]].text.strip()],
+                    "starting_year": [cols[col_key["term"]].text.strip().split(",")[1].strip()[:4]],
+                }
+            )
+            if len(cols) == col_key["length"]:
+                leftover_lt_govnrs = []
+                df = df.assign(
+                    lt_govnr=cols[col_key["lt_govnr"]].text.strip().join(leftover_lt_govnrs)
+                )
+            else:
+                df = df.assign(
+                    lt_govnr=str(scraped_state_df.iloc[len(scraped_state_df) - 1]["lt_govnr"]).join(leftover_lt_govnrs)
+                )
+
+            scraped_state_df = scraped_state_df.append(df)
+        elif len(cols) >= 1:
+            leftover_lt_govnrs += [cols[len(cols) - 1].text.strip() + " | "]
 
     return scraped_state_df
 
