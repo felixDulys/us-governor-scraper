@@ -56,10 +56,33 @@ STATES = {
     'Wyoming': 'WY',
 }
 
+BASE_URL = "http://en.wikipedia.org/wiki/List_of_governors_of_{capitalized_state}"
+
 COL_FLAGS = {
-    "order": "No.|No|#",
-    "name": "Governor|name",
-    "party": "Party",
-    "term": "Years|Term of office|Term in office",
-    "lt_govnr": "(Lt.)(\w|\d|.)"
+    # "order": "No.|No|#|[0-100]",
+    "name": "Governor|name|, ",
+    "party": "Party|Democrat|Republican|Federalist|party",
+    "term": "Years|Term of office|Term in office|term|limited|"
+            "Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|"
+            "September|October|November|December",
+    "lt_govnr": "(Lt.)(\w|\d|.)|exist|war|Civil|War|vacant|Vacant"
+}
+
+SORT_COLS = {
+    True: {
+        "length": None,
+        "order": None,
+        "name": "data-sort-value",
+        "party": None,
+        "term": None,
+        "lt_govnr": None
+    },
+    False: {
+        "length": None,
+        "order": None,
+        "name": None,
+        "party": None,
+        "term": None,
+        "lt_govnr": None
+    }
 }
