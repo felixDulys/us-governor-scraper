@@ -59,13 +59,15 @@ STATES = {
 BASE_URL = "http://en.wikipedia.org/wiki/List_of_governors_of_{capitalized_state}"
 
 COL_FLAGS = {
+    "war": "civil war|Civil War|military|occupation",
     # "order": "No.|No|#|[0-100]",
-    "name": "Governor|name|, ",
-    "party": "Party|Democrat|Republican|Federalist|party",
+    "name": "\A[A-Z]",
+    # "party": "Party|Democrat|Republican|Federalist|party|Independent|Whig",
     "term": "Years|Term of office|Term in office|term|limited|"
             "Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|"
             "September|October|November|December",
-    "lt_govnr": "(Lt.)(\w|\d|.)|exist|war|Civil|War|vacant|Vacant"
+    "party": "(\w\D)",
+    "lt_govnr": "(Lt.)(\w\D)|exist|war|Civil|War|vacant|Vacant|Office did not exist"
 }
 
 SORT_COLS = {

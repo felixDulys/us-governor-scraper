@@ -3,10 +3,6 @@ from governor.scraper.clean_state import clean_state
 from selenium import webdriver
 import time
 import pandas as pd
-import numpy as np
-from selenium.webdriver.support.ui import Select
-from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 import re
 
@@ -53,47 +49,54 @@ def get_state_df_from_wikipedia(state_to_scrape, col_flags=COL_FLAGS):
 
     rows = table_body.find_all('tr')
 
+    headers = list(col_flags.keys())
+    headers.remove("war")
+
     scraped_state_df = pd.DataFrame(
-        columns=["starting_year"] + list(col_flags.keys())
+        columns=["starting_year"] + headers
     )
     print(f"mining governor data for {state_to_scrape}...")
     leftover_lt_govnrs = []
-    last_row_length = 0
     for row, i in zip(rows, range(0, len(rows))):
         cols = row.find_all("td")
         print(f"col length: {len(cols)} | row: {i}")
-        # row_key = identify_row(cols, col_flags)
-        # # import pdb; pdb.set_trace()
-        # if len(cols) >= last_row_length:
-        #     df = pd.DataFrame(
-        #         {
-        #             "order": [len(scraped_state_df)],
-        #             "term": [cols[row_key["term"]].text.strip()],
-        #             "party": [cols[row_key["party"]].text.strip()],
-        #             "starting_year": [cols[row_key["term"]].text.strip().split(",")[1].strip()[:4]],
-        #         }
-        #     )
-        #     last_row_length = len(cols)
-        #     if sortable:
-        #         df = df.assign(name=cols[row_key["name"]]["data-sort-value"])
-        #     else:
-        #         df = df.assign(name=cols[row_key["name"]])
-        #     scraped_state_df = scraped_state_df.append(df)
-        #     if row_key["lt_govnr"] == "no data":
-        #         df = df.assign(lt_govnr="none")
-        #     else:
-        #         df = df.assign(name=cols[row_key["lt_gvnr"]] +
-        #                        cols[row_key["lt_govnr"]].text.strip().join(leftover_lt_govnrs))
-        # else:
-        #     leftover_lt_govnrs += [cols[len(cols) - 1].text.strip() + "| "]
-
+        row_key = identify_row(cols, col_flags)
+        # import pdb; pdb.set_trace()
+        if row_key["war"] != "no data":
+            continue
+        else:
+            if len(cols) > 3:
+                df = pd.DataFrame(
+                        {
+                            "order": [len(scraped_state_df)],
+                            "term": [cols[row_key["term"]].text.strip()],
+                            "party": [cols[row_key["party"]].text.strip()],
+                            "starting_year": [cols[row_key["term"]].text.strip().split(",")[1].strip()[:4]],
+                        }
+                )
+                if sortable:
+                    df = df.assign(name=cols[row_key["name"]]["data-sort-value"])
+                else:
+                    df = df.assign(name=cols[row_key["name"]])
+                if (row_key["lt_govnr"] == "no data") & (len(scraped_state_df) > 0):
+                    df = df.assign(lt_govnr=scraped_state_df.iloc[len(scraped_state_df) - 1]["lt_govnr"])
+                else:
+                    if sortable:
+                        df = df.assign(lt_govnr=cols[row_key["lt_govnr"]].text.strip().join(leftover_lt_govnrs))
+                    else:
+                        df = df.assign(lt_govnr=cols[row_key["lt_govnr"]]["data-sort-value"].join(leftover_lt_govnrs))
+                scraped_state_df = scraped_state_df.append(df)
+            else:
+                if re.search(cols[len(cols) - 1].text.strip(), "\d"):
+                    continue
+                elif re.search(cols[len(cols) - 1].text.strip(), "\w"):
+                    if sortable:
+                        add_this = cols[len(cols) - 1]["data-sort-value"]
+                    else:
+                        add_this = cols[len(cols) - 1].text.strip()
+                    leftover_lt_govnrs += [add_this + "| "]
 
     return scraped_state_df
-
-# debugging todo
-# print(f"col length: {len(cols)} | row: {i}")
-
-# todo
 
 
 def identify_row(cols, col_flags):
@@ -102,15 +105,21 @@ def identify_row(cols, col_flags):
     for col in col_flags.keys():
         key[col] = "no data"
     # match the columns to their locations by header
-    for cell, idx in zip(cols, range(0, len(cols) - 1)):
+    for cell, idx in zip(cols, range(0, len(cols))):
         if "data-sort-value" in cell.attrs.keys():
-            key["name"] = idx
+            if key["name"] == "no data":
+                key["name"] = idx
+            elif key["lt_govnr"] == "no data":
+                key["lt_govnr"] = idx
         else:
             this_col = cell.text.strip()
             for col in key.keys():
                 if key[col] == "no data":
                     if re.search(col_flags[col], this_col):
                         key[col] = idx
+                        break
+        if key["war"] != "no data":
+            break
     return key
 
 
