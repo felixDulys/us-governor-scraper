@@ -67,7 +67,8 @@ COL_FLAGS = {
             "Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|"
             "September|October|November|December",
     "party": "(\w\D)",
-    "lt_govnr": "(Lt.)(\w\D)|exist|war|Civil|War|vacant|Vacant|Office did not exist"
+    # "lt_govnr": "(Lt.)(\w\D)|exist|war|Civil|War|vacant|Vacant|Office did not exist"
+    "lt_govnr": "\A[A-Z]"
 }
 
 SORT_COLS = {
