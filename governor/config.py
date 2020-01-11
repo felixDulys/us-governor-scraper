@@ -7,7 +7,6 @@ STATES = {
     'Colorado': 'CO',
     'Connecticut': 'CT',
     'Delaware': 'DE',
-    # 'District of Columbia': 'DC',
     'Florida': 'FL',
     'Georgia': 'GA',
     'Hawaii': 'HI',
@@ -34,13 +33,10 @@ STATES = {
     'New York': 'NY',
     'North Carolina': 'NC',
     'North Dakota': 'ND',
-    # 'Northern Mariana Islands':'MP',
     'Ohio': 'OH',
     'Oklahoma': 'OK',
     'Oregon': 'OR',
-    # 'Palau': 'PW',
     'Pennsylvania': 'PA',
-    # 'Puerto Rico': 'PR',
     'Rhode Island': 'RI',
     'South Carolina': 'SC',
     'South Dakota': 'SD',
@@ -48,7 +44,6 @@ STATES = {
     'Texas': 'TX',
     'Utah': 'UT',
     'Vermont': 'VT',
-    # 'Virgin Islands': 'VI',
     'Virginia': 'VA',
     'Washington': 'WA',
     'West Virginia': 'WV',
@@ -60,32 +55,9 @@ BASE_URL = "http://en.wikipedia.org/wiki/List_of_governors_of_{capitalized_state
 
 COL_FLAGS = {
     "war": "civil war|Civil War|military|occupation",
-    # "order": "No.|No|#|[0-100]",
     "term": "Years|Term of office|Term in office|term|limited|"
             "Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|"
             "September|October|November|December",
     "name": "\A[A-Z]",
-    # "party": "Party|Democrat|Republican|Federalist|party|Independent|Whig",
     "party": "(\w\D)",
-    # "lt_govnr": "(Lt.)(\w\D)|exist|war|Civil|War|vacant|Vacant|Office did not exist"
-    "lt_govnr": "\A[A-Z]"
-}
-
-SORT_COLS = {
-    True: {
-        "length": None,
-        "order": None,
-        "name": "data-sort-value",
-        "party": None,
-        "term": None,
-        "lt_govnr": "data-sort-value"
-    },
-    False: {
-        "length": None,
-        "order": None,
-        "name": None,
-        "party": None,
-        "term": None,
-        "lt_govnr": None
-    }
 }
