@@ -15,7 +15,7 @@ def scrape_all_states(out_path):
     for state in ["Florida", "Alabama", "Alaska", "Georgia", "Texas", "California", "Massachusetts"]:
         cleaned_state_df = scrape_state(state)
         all_states = all_states.append(cleaned_state_df)
-        all_states.to_csv(f"{out_path}all_states_governors_sample.csv", index=False)
+        all_states.to_csv(f"{out_path}all_states_governors_sample_lr.csv", index=False)
 
 
 def scrape_state(state_to_scrape):
@@ -80,19 +80,19 @@ def get_state_df_from_wikipedia(state_to_scrape, col_flags=COL_FLAGS):
                 else:
                     df = df.assign(name=cols[row_key["name"]].text.strip())
                 if isinstance(row_key["lt_govnr"], int) & ((lt_gov_len == len(cols)) | (lt_gov_len == 0)):
-                    if sortable:
+                    try:
                         df = df.assign(lt_govnr=cols[row_key["lt_govnr"]]["data-sort-value"])
-                    else:
+                    except KeyError:
                         df = df.assign(lt_govnr=cols[row_key["lt_govnr"]].text.strip())
                     lt_gov_len = len(cols)
                 elif (len(scraped_state_df) > 0) & (len(leftover_lt_govnrs) == 0):
                     df = df.assign(lt_govnr=scraped_state_df.iloc[len(scraped_state_df) - 1]["lt_govnr"])
                 elif len(leftover_lt_govnrs) > 0:
                     if isinstance(row_key["lt_govnr"], int):
-                        if sortable:
+                        try:
                             df = df.assign(
                                 lt_govnr=cols[row_key["lt_govnr"]]["data-sort-value"].join(leftover_lt_govnrs))
-                        else:
+                        except KeyError:
                             df = df.assign(lt_govnr=cols[row_key["lt_govnr"]].text.strip().join(leftover_lt_govnrs))
                 else:
                     df = df.assign(lt_govnr=np.nan)
@@ -100,9 +100,9 @@ def get_state_df_from_wikipedia(state_to_scrape, col_flags=COL_FLAGS):
                 scraped_state_df = scraped_state_df.append(df)
             elif len(cols) > 0:
                 if re.search("\A[A-Z]", cols[len(cols) - 1].text.strip()):
-                    if sortable:
+                    try:
                         add_this = cols[len(cols) - 1]["data-sort-value"]
-                    else:
+                    except KeyError:
                         add_this = cols[len(cols) - 1].text.strip()
                     leftover_lt_govnrs += [add_this + "| "]
                 elif re.search("\d", cols[len(cols) - 1].text.strip()):
@@ -120,7 +120,6 @@ def identify_row(cols, col_flags):
         key[col] = "no data"
     # match the columns to their locations by header
     for cell, idx in zip(cols, range(0, len(cols))):
-        import pdb; pdb.set_trace()
         if "data-sort-value" in cell.attrs.keys():
             if key["name"] == "no data":
                 key["name"] = idx
@@ -136,76 +135,6 @@ def identify_row(cols, col_flags):
         if key["war"] != "no data":
             break
     return key
-
-
-# def extract_sortable_table(rows, col_key, col_flags=COL_FLAGS):
-#     scraped_state_df = pd.DataFrame(
-#         columns=["starting_year"] + list(col_flags.keys())
-#     )
-#
-#     leftover_lt_govnrs = []
-#     for row, i in zip(rows, range(0, len(rows))):
-#         # import pdb; pdb.set_trace()
-#         cols = row.find_all("td")
-#         if (len(cols) == col_key["length"]) | (len(cols) == col_key["length"] - 1):
-#             df = pd.DataFrame(
-#                 {
-#                     "order": [len(scraped_state_df)],
-#                     "name": [cols[col_key["name"]]["data-sort-value"]],
-#                     "term": [cols[col_key["term"]].text.strip()],
-#                     "party": [cols[col_key["party"]].text.strip()],
-#                     "starting_year": [cols[col_key["term"]].text.strip().split(",")[1].strip()[:4]],
-#                 }
-#             )
-#             if len(cols) == col_key["length"]:
-#                 leftover_lt_govnrs = []
-#                 df = df.assign(
-#                     lt_govnr=cols[col_key["lt_govnr"]].text.strip().join(leftover_lt_govnrs)
-#                 )
-#             else:
-#                 df = df.assign(
-#                     lt_govnr=str(scraped_state_df.iloc[len(scraped_state_df) - 1]["lt_govnr"]).join(leftover_lt_govnrs)
-#                 )
-#
-#             scraped_state_df = scraped_state_df.append(df)
-#         elif len(cols) >= 1:
-#             leftover_lt_govnrs += [cols[len(cols) - 1].text.strip() + " | "]
-
-
-# def extract_static_table(rows, col_key, col_flags=COL_FLAGS):
-#     scraped_state_df = pd.DataFrame(
-#         columns=["starting_year"] + list(col_flags.keys())
-#     )
-#
-#     leftover_lt_govnrs = []
-#     for row, i in zip(rows, range(0, len(rows))):
-#         cols = row.find_all("td")
-#         # import pdb; pdb.set_trace()
-#         if (len(cols) == col_key["length"]) | (len(cols) == col_key["length"] - 1):
-#             df = pd.DataFrame(
-#                 {
-#                     "order": [len(scraped_state_df)],
-#                     "name": [cols[col_key["name"]].text.strip()],
-#                     "term": [cols[col_key["term"]].text.strip()],
-#                     "party": [cols[col_key["party"]].text.strip()],
-#                     "starting_year": [cols[col_key["term"]].text.strip().split(",")[1].strip()[:4]],
-#                 }
-#             )
-#             if len(cols) == col_key["length"]:
-#                 leftover_lt_govnrs = []
-#                 df = df.assign(
-#                     lt_govnr=cols[col_key["lt_govnr"]].text.strip().join(leftover_lt_govnrs)
-#                 )
-#             else:
-#                 df = df.assign(
-#                     lt_govnr=str(scraped_state_df.iloc[len(scraped_state_df) - 1]["lt_govnr"]).join(leftover_lt_govnrs)
-#                 )
-#
-#             scraped_state_df = scraped_state_df.append(df)
-#         elif len(cols) >= 1:
-#             leftover_lt_govnrs += [cols[len(cols) - 1].text.strip() + " | "]
-#
-#     return scraped_state_df
 
 
 def set_up_browser(state_to_scrape):
