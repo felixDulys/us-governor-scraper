@@ -67,6 +67,9 @@ def get_state_df_from_wikipedia(state_to_scrape, col_flags=COL_FLAGS):
             continue
         else:
             if len(cols) > 3:
+                if (row_key["term"] == "no data") | (row_key["term"] == "no data") | (row_key["party"] == "no data"):
+                    cols = row.find_all("th") + cols
+                    row_key = identify_row(cols, col_flags)
                 df = pd.DataFrame(
                         {
                             "order": [len(scraped_state_df)],
