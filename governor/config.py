@@ -56,7 +56,8 @@ BASE_URL = "http://en.wikipedia.org/wiki/List_of_governors_of_{capitalized_state
 COL_FLAGS = {
     "war": "civil war|Civil War|military|occupation",
     "term": "Years|Term of office|Term in office|term|limited|"
-            "Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|"
+            "Jan |Feb |Mar |Apr |May |Jun |Jul |Aug |Sep |Oct |Nov |Dec |January|February|March|April|May|June|"
+            "July|August|"
             "September|October|November|December",
     "name": "\A[A-Z]",
     "party": "(\w\D)",

@@ -5,7 +5,6 @@ import time
 import pandas as pd
 from bs4 import BeautifulSoup
 import re
-import numpy as np
 
 
 def scrape_all_states(out_path):
@@ -65,18 +64,26 @@ def get_state_df_from_wikipedia(state_to_scrape, col_flags=COL_FLAGS):
             continue
         else:
             if len(cols) > 3:
-                if (row_key["term"] == "no data") | (row_key["term"] == "no data") | (row_key["party"] == "no data"):
-                    cols = [row.find_all("th")[0]] + cols
-                    row_key = identify_row(cols, col_flags)
+                if row_key["party"] == "no data":
+                    if len(row.find_all("th")) > 0:
+                        cols = [row.find_all("th")[0]] + cols
+                        row_key = identify_row(cols, col_flags)
+                    else:
+                        continue
+                if row_key["term"] == "no data":
+                    continue
+                else:
+                    starting_year = cols[row_key["term"]].text.strip().split(",")[1].strip()[:4]
+
                 df = pd.DataFrame(
                         {
                             "order": [len(scraped_state_df)],
                             "term": [cols[row_key["term"]].text.strip()],
                             "party": [cols[row_key["party"]].text.strip()],
-                            "starting_year": [cols[row_key["term"]].text.strip().split(",")[1].strip()[:4]],
+                            "starting_year": [starting_year],
                         }
                 )
-                if sortable:
+                if "data-sort-value" in cols[row_key["name"]].attrs:
                     df = df.assign(name=cols[row_key["name"]]["data-sort-value"])
                 else:
                     df = df.assign(name=cols[row_key["name"]].text.strip())
