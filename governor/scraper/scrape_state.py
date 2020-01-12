@@ -12,11 +12,16 @@ import re
 def scrape_all_states(out_path):
     print("Initializing all state scrape.")
     all_states = pd.DataFrame()
+    errors = []
     # for state in STATES.keys():
-    for state in ["Mississippi",  "Missouri"]:
-        cleaned_state_df = scrape_state(state)
-        all_states = all_states.append(cleaned_state_df)
-        all_states.to_csv(f"{out_path}all_states_governors_sample_nolt.csv", index=False)
+    for state in ["Montana", "Nevada", "Washington", 'Nebraska', 'New Hampshire', 'New Mexico', 'North Carolina', 'North Dakota', 'South Carolina', 'South Dakota', 'Vermont', 'Virginia']:
+        try:
+            cleaned_state_df = scrape_state(state)
+            all_states = all_states.append(cleaned_state_df)
+            all_states.to_csv(f"{out_path}all_states_governors_sample_nolt.csv", index=False)
+        except:
+            errors += [state]
+    print(f"done. errors were {errors}")
 
 
 def scrape_state(state_to_scrape):
