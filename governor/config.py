@@ -73,7 +73,7 @@ NO_STYLE = {
     "Missouri": 5,
     "Montana": 2,
     "Nevada": 1,
-
+    "Nebraska": 2
 }
 
 INCLUDE_HEADERS = [
