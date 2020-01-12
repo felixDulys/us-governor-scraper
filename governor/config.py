@@ -62,3 +62,5 @@ COL_FLAGS = {
     "name": "\A[A-Z]",
     "party": "(\w\D)",
 }
+
+NO_STYLE = ["Mississippi"]

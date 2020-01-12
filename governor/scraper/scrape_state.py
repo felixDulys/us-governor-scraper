@@ -1,4 +1,4 @@
-from governor.config import COL_FLAGS, BASE_URL
+from governor.config import COL_FLAGS, BASE_URL, STATES, NO_STYLE
 from governor.scraper.clean_state import clean_state
 from selenium import webdriver
 import time
@@ -6,12 +6,14 @@ import pandas as pd
 from bs4 import BeautifulSoup
 import re
 
+# todo: go back and hard code parties for accuarcy
+
 
 def scrape_all_states(out_path):
     print("Initializing all state scrape.")
     all_states = pd.DataFrame()
-    # for state in STATES.keys():
-    for state in ["Florida", "Alabama", "Alaska", "Georgia", "Texas", "California", "Massachusetts"]:
+    for state in STATES.keys():
+    # for state in ["Mississippi"]:
         cleaned_state_df = scrape_state(state)
         all_states = all_states.append(cleaned_state_df)
         all_states.to_csv(f"{out_path}all_states_governors_sample_nolt.csv", index=False)
@@ -31,16 +33,21 @@ def get_state_df_from_wikipedia(state_to_scrape, col_flags=COL_FLAGS):
     # grab all tables from the page
     tables = soup.find_all("table")
 
-    sortable = False
     match = None
+    i = 0
     for table in tables:
-        if (len(table.attrs) >= 1) & ("style" in table.attrs.keys()):
-            if ("wikitable" in table.attrs["class"][0]) & ("text-align:" in table.attrs["style"]):
+        if state_to_scrape in NO_STYLE:
+            if (len(table.attrs) >= 1) & ("wikitable" in table.attrs["class"][0]):
                 match = table
-                if "sortable" in match.attrs["class"]:
-                    sortable = True
+                i += 1
+                if i == 2:
+                    break
         else:
-            continue
+            if (len(table.attrs) >= 1) & ("style" in table.attrs.keys()):
+                if ("wikitable" in table.attrs["class"][0]) & ("text-align:" in table.attrs["style"]):
+                    match = table
+            # else:
+            #     continue
 
     if match is not None:
         table_body = match.find('tbody')
@@ -68,8 +75,12 @@ def get_state_df_from_wikipedia(state_to_scrape, col_flags=COL_FLAGS):
                     if len(row.find_all("th")) > 0:
                         cols = [row.find_all("th")[0]] + cols
                         row_key = identify_row(cols, col_flags)
+                        if row_key["party"] == "no data":
+                            party = "None"
                     else:
                         continue
+                else:
+                    party = cols[row_key["party"]].text.strip()
                 if row_key["term"] == "no data":
                     continue
                 else:
@@ -79,7 +90,7 @@ def get_state_df_from_wikipedia(state_to_scrape, col_flags=COL_FLAGS):
                         {
                             "order": [len(scraped_state_df)],
                             "term": [cols[row_key["term"]].text.strip()],
-                            "party": [cols[row_key["party"]].text.strip()],
+                            "party": [party],
                             "starting_year": [starting_year],
                         }
                 )
