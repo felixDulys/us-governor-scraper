@@ -1,21 +1,27 @@
-from governor.config import COL_FLAGS, BASE_URL
+from governor.config import COL_FLAGS, BASE_URL, STATES, NO_STYLE
 from governor.scraper.clean_state import clean_state
 from selenium import webdriver
 import time
 import pandas as pd
 from bs4 import BeautifulSoup
 import re
-import numpy as np
+
+# todo: go back and hard code parties for accuarcy
 
 
 def scrape_all_states(out_path):
     print("Initializing all state scrape.")
     all_states = pd.DataFrame()
+    errors = []
     # for state in STATES.keys():
-    for state in ["Florida", "Alabama", "Alaska", "Georgia", "Texas", "California", "Massachusetts"]:
-        cleaned_state_df = scrape_state(state)
-        all_states = all_states.append(cleaned_state_df)
-        all_states.to_csv(f"{out_path}all_states_governors_sample_lr.csv", index=False)
+    for state in ["Montana", "Nevada", "Washington", 'Nebraska', 'New Hampshire', 'New Mexico', 'North Carolina', 'North Dakota', 'South Carolina', 'South Dakota', 'Vermont', 'Virginia']:
+        try:
+            cleaned_state_df = scrape_state(state)
+            all_states = all_states.append(cleaned_state_df)
+            all_states.to_csv(f"{out_path}all_states_governors_sample_nolt.csv", index=False)
+        except:
+            errors += [state]
+    print(f"done. errors were {errors}")
 
 
 def scrape_state(state_to_scrape):
@@ -32,16 +38,21 @@ def get_state_df_from_wikipedia(state_to_scrape, col_flags=COL_FLAGS):
     # grab all tables from the page
     tables = soup.find_all("table")
 
-    sortable = False
     match = None
+    i = 0
     for table in tables:
-        if (len(table.attrs) >= 1) & ("style" in table.attrs.keys()):
-            if ("wikitable" in table.attrs["class"][0]) & ("text-align:" in table.attrs["style"]):
+        if state_to_scrape in NO_STYLE.keys():
+            if (len(table.attrs) >= 1) & ("wikitable" in table.attrs["class"][0]):
                 match = table
-                if "sortable" in match.attrs["class"]:
-                    sortable = True
+                i += 1
+                if i == NO_STYLE[state_to_scrape]:
+                    break
         else:
-            continue
+            if (len(table.attrs) >= 1) & ("style" in table.attrs.keys()):
+                if ("wikitable" in table.attrs["class"][0]) & ("text-align:" in table.attrs["style"]):
+                    match = table
+            # else:
+            #     continue
 
     if match is not None:
         table_body = match.find('tbody')
@@ -52,13 +63,12 @@ def get_state_df_from_wikipedia(state_to_scrape, col_flags=COL_FLAGS):
 
     headers = list(col_flags.keys())
     headers.remove("war")
+    headers.remove("term2")
 
     scraped_state_df = pd.DataFrame(
         columns=["starting_year"] + headers
     )
     print(f"mining governor data for {state_to_scrape}...")
-    leftover_lt_govnrs = []
-    lt_gov_len = 0
     for row, i in zip(rows, range(0, len(rows))):
         cols = row.find_all("td")
         print(f"col length: {len(cols)} | row: {i}")
@@ -67,49 +77,34 @@ def get_state_df_from_wikipedia(state_to_scrape, col_flags=COL_FLAGS):
             continue
         else:
             if len(cols) > 3:
-                if (row_key["term"] == "no data") | (row_key["term"] == "no data") | (row_key["party"] == "no data"):
-                    cols = row.find_all("th") + cols
-                    row_key = identify_row(cols, col_flags)
+                if row_key["party"] == "no data":
+                    if len(row.find_all("th")) > 0:
+                        cols = [row.find_all("th")[0]] + cols
+                        row_key = identify_row(cols, col_flags)
+                        if row_key["party"] == "no data":
+                            party = "None"
+                    else:
+                        continue
+                else:
+                    party = cols[row_key["party"]].text.strip()
+                if row_key["term"] == "no data":
+                    continue
+                else:
+                    starting_year = cols[row_key["term"]].text.strip().split(",")[1].strip()[:4]
+
                 df = pd.DataFrame(
                         {
                             "order": [len(scraped_state_df)],
                             "term": [cols[row_key["term"]].text.strip()],
-                            "party": [cols[row_key["party"]].text.strip()],
-                            "starting_year": [cols[row_key["term"]].text.strip().split(",")[1].strip()[:4]],
+                            "party": [party],
+                            "starting_year": [starting_year],
                         }
                 )
-                if sortable:
+                if "data-sort-value" in cols[row_key["name"]].attrs:
                     df = df.assign(name=cols[row_key["name"]]["data-sort-value"])
                 else:
                     df = df.assign(name=cols[row_key["name"]].text.strip())
-                if isinstance(row_key["lt_govnr"], int) & ((lt_gov_len == len(cols)) | (lt_gov_len == 0)):
-                    try:
-                        df = df.assign(lt_govnr=cols[row_key["lt_govnr"]]["data-sort-value"])
-                    except KeyError:
-                        df = df.assign(lt_govnr=cols[row_key["lt_govnr"]].text.strip())
-                    lt_gov_len = len(cols)
-                elif (len(scraped_state_df) > 0) & (len(leftover_lt_govnrs) == 0):
-                    df = df.assign(lt_govnr=scraped_state_df.iloc[len(scraped_state_df) - 1]["lt_govnr"])
-                elif len(leftover_lt_govnrs) > 0:
-                    if isinstance(row_key["lt_govnr"], int):
-                        try:
-                            df = df.assign(
-                                lt_govnr=cols[row_key["lt_govnr"]]["data-sort-value"].join(leftover_lt_govnrs))
-                        except KeyError:
-                            df = df.assign(lt_govnr=cols[row_key["lt_govnr"]].text.strip().join(leftover_lt_govnrs))
-                else:
-                    df = df.assign(lt_govnr=np.nan)
-                leftover_lt_govnrs = []
                 scraped_state_df = scraped_state_df.append(df)
-            elif len(cols) > 0:
-                if re.search("\A[A-Z]", cols[len(cols) - 1].text.strip()):
-                    try:
-                        add_this = cols[len(cols) - 1]["data-sort-value"]
-                    except KeyError:
-                        add_this = cols[len(cols) - 1].text.strip()
-                    leftover_lt_govnrs += [add_this + "| "]
-                elif re.search("\d", cols[len(cols) - 1].text.strip()):
-                    continue
             else:
                 continue
 
@@ -126,8 +121,6 @@ def identify_row(cols, col_flags):
         if "data-sort-value" in cell.attrs.keys():
             if key["name"] == "no data":
                 key["name"] = idx
-            elif key["lt_govnr"] == "no data":
-                key["lt_govnr"] = idx
         else:
             this_col = cell.text.strip()
             for col in key.keys():
