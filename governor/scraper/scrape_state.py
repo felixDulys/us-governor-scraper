@@ -12,8 +12,8 @@ import re
 def scrape_all_states(out_path):
     print("Initializing all state scrape.")
     all_states = pd.DataFrame()
-    for state in STATES.keys():
-    # for state in ["Mississippi"]:
+    # for state in STATES.keys():
+    for state in ["Mississippi",  "Missouri"]:
         cleaned_state_df = scrape_state(state)
         all_states = all_states.append(cleaned_state_df)
         all_states.to_csv(f"{out_path}all_states_governors_sample_nolt.csv", index=False)
@@ -36,11 +36,11 @@ def get_state_df_from_wikipedia(state_to_scrape, col_flags=COL_FLAGS):
     match = None
     i = 0
     for table in tables:
-        if state_to_scrape in NO_STYLE:
+        if state_to_scrape in NO_STYLE.keys():
             if (len(table.attrs) >= 1) & ("wikitable" in table.attrs["class"][0]):
                 match = table
                 i += 1
-                if i == 2:
+                if i == NO_STYLE[state_to_scrape]:
                     break
         else:
             if (len(table.attrs) >= 1) & ("style" in table.attrs.keys()):
@@ -58,6 +58,7 @@ def get_state_df_from_wikipedia(state_to_scrape, col_flags=COL_FLAGS):
 
     headers = list(col_flags.keys())
     headers.remove("war")
+    headers.remove("term2")
 
     scraped_state_df = pd.DataFrame(
         columns=["starting_year"] + headers
