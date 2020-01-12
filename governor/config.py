@@ -1,29 +1,29 @@
 STATES = {
-    # 'Alabama': 'AL',
-    # 'Alaska': 'AK',
-    # 'Arizona': 'AZ',
-    # 'Arkansas': 'AR',
-    # 'California': 'CA',
-    # 'Colorado': 'CO',
-    # 'Connecticut': 'CT',
-    # 'Delaware': 'DE',
-    # 'Florida': 'FL',
-    # 'Georgia': 'GA',
-    # 'Hawaii': 'HI',
-    # 'Idaho': 'ID',
-    # 'Illinois': 'IL',
-    # 'Indiana': 'IN',
-    # 'Iowa': 'IA',
-    # 'Kansas': 'KS',
-    # 'Kentucky': 'KY',
-    # 'Louisiana': 'LA',
-    # 'Maine': 'ME',
-    # 'Maryland': 'MD',
-    # 'Massachusetts': 'MA',
-    # 'Michigan': 'MI',
-    # 'Minnesota': 'MN',
-    # 'Mississippi': 'MS',
-    # 'Missouri': 'MO',
+    'Alabama': 'AL',
+    'Alaska': 'AK',
+    'Arizona': 'AZ',
+    'Arkansas': 'AR',
+    'California': 'CA',
+    'Colorado': 'CO',
+    'Connecticut': 'CT',
+    'Delaware': 'DE',
+    'Florida': 'FL',
+    'Georgia': 'GA',
+    'Hawaii': 'HI',
+    'Idaho': 'ID',
+    'Illinois': 'IL',
+    'Indiana': 'IN',
+    'Iowa': 'IA',
+    'Kansas': 'KS',
+    'Kentucky': 'KY',
+    'Louisiana': 'LA',
+    'Maine': 'ME',
+    'Maryland': 'MD',
+    'Massachusetts': 'MA',
+    'Michigan': 'MI',
+    'Minnesota': 'MN',
+    'Mississippi': 'MS',
+    'Missouri': 'MO',
     'Montana': 'MT',
     'Nebraska': 'NE',
     'Nevada': 'NV',
@@ -67,8 +67,31 @@ COL_FLAGS = {
     "party": "(\w\D)",
 }
 
+# These are wikipedia pages with tables that are different from most and need some help.
 NO_STYLE = {
     "Mississippi": 2,
     "Missouri": 5,
-    "Montana": 2
+    "Montana": 2,
+    "Nevada": 1,
+
 }
+
+INCLUDE_HEADERS = [
+    "Montana"
+]
+
+COL_FLAGS_SPECIAL = {
+    "Nevada": {
+        "war": "civil war|Civil War|military|occupation",
+        "name": "\A[A-Z]",
+        "term": "Years|Term of office|Term in office|term|limited|"
+                "Jan |Feb |Mar |Apr |May |Jun |Jul |Aug |Sep |Oct |Nov |Dec |January |February |March |April |May |June |"
+                "July |August |"
+                "September |October |November |December ",
+        "party": "(\w\D)",
+    },
+}
+
+
+## TODO
+## Montana - two boxes for term into one.

@@ -1,4 +1,6 @@
-from governor.config import COL_FLAGS, BASE_URL, STATES, NO_STYLE
+from governor.config import (
+    COL_FLAGS, BASE_URL, STATES, NO_STYLE, INCLUDE_HEADERS, COL_FLAGS_SPECIAL
+)
 from governor.scraper.clean_state import clean_state
 from selenium import webdriver
 import time
@@ -6,7 +8,7 @@ import pandas as pd
 from bs4 import BeautifulSoup
 import re
 
-# todo: go back and hard code parties for accuarcy
+# todo: go back and hard code parties for accuracy
 
 
 def scrape_all_states(out_path):
@@ -71,6 +73,8 @@ def get_state_df_from_wikipedia(state_to_scrape, col_flags=COL_FLAGS):
     print(f"mining governor data for {state_to_scrape}...")
     for row, i in zip(rows, range(0, len(rows))):
         cols = row.find_all("td")
+        if state_to_scrape in INCLUDE_HEADERS:
+            cols = row.find_all("th") + cols
         print(f"col length: {len(cols)} | row: {i}")
         row_key = identify_row(cols, col_flags)
         if row_key["war"] != "no data":
