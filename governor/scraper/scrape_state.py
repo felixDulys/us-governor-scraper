@@ -28,7 +28,11 @@ def scrape_all_states(out_path):
 
 def scrape_state(state_to_scrape):
     print(f"scraping {state_to_scrape}...")
-    scraped_state_df = get_state_df_from_wikipedia(state_to_scrape)
+    if state_to_scrape in COL_FLAGS_SPECIAL.keys():
+        flags = COL_FLAGS_SPECIAL[state_to_scrape]
+    else:
+        flags = COL_FLAGS
+    scraped_state_df = get_state_df_from_wikipedia(state_to_scrape, flags)
     cleaned_state_df = clean_state(scraped_state_df, state_to_scrape)
     return cleaned_state_df
 
@@ -64,8 +68,9 @@ def get_state_df_from_wikipedia(state_to_scrape, col_flags=COL_FLAGS):
     rows = table_body.find_all('tr')
 
     headers = list(col_flags.keys())
-    headers.remove("war")
-    headers.remove("term2")
+    for thing in ["war", "term2"]:
+        if thing in headers:
+            headers.remove(thing)
 
     scraped_state_df = pd.DataFrame(
         columns=["starting_year"] + headers
