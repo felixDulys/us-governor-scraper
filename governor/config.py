@@ -54,17 +54,17 @@ STATES = {
 BASE_URL = "http://en.wikipedia.org/wiki/List_of_governors_of_{capitalized_state}"
 
 COL_FLAGS = {
-    "war": "civil war|Civil War|military|occupation",
-    "term": "Years|Term of office|Term in office|term|limited|"
+    "war": "[cC]ivil war|[oO]ccupation",
+    "term": "Year|[Tt]erm|[lL]imited|[Vv]acant"
             "Jan |Feb |Mar |Apr |May |Jun |Jul |Aug |Sep |Oct |Nov |Dec |January |February |March |April |May |June |"
             "July |August |"
             "September |October |November |December ",
-    "term2": "Years|Term of office|Term in office|term|limited|"
-            "Jan |Feb |Mar |Apr |May |Jun |Jul |Aug |Sep |Oct |Nov |Dec |January |February |March |April |May |June |"
-            "July |August |"
-            "September |October |November |December ",
+    "term2": "Years|Term of office|Term in office|term|limited|vacant|Vacant"
+            "Jan |Feb |Mar |Apr[ |il ] |May |Jun |Jul |Aug |Sep |Oct |Nov |Dec |January |February |March |April |May "
+             "|June |July |August |September |October |November |December ",
     "name": "\A[A-Z]",
-    "party": "(\w\D)&(\D\w)",
+    "party": "[Dd]emocrat|[Rr]epublic|Dem|Rep|[Ww]hig|[Uu]nion|[Ff]ederal|[kK]now|[Ppopulist]|[Nn]one|[Ccountry]|[pP]arty|"
+             "[Rr]hode ",
 }
 
 # These are wikipedia pages with tables that are different from most and need some help.
@@ -81,6 +81,7 @@ INCLUDE_HEADERS = [
     "Montana"
 ]
 
+# order changed for special snowflakes
 COL_FLAGS_SPECIAL = {
     "Nevada": {
         "war": COL_FLAGS["war"],
@@ -91,7 +92,7 @@ COL_FLAGS_SPECIAL = {
 }
 COL_FLAGS_SPECIAL["Washington"] = COL_FLAGS_SPECIAL["Nevada"]
 
-
+MATCH = ["name", "party"]
 
 ## TODO
 ## Montana - two boxes for term into one.

@@ -1,5 +1,6 @@
 from governor.config import (
-    COL_FLAGS, BASE_URL, STATES, NO_STYLE, INCLUDE_HEADERS, COL_FLAGS_SPECIAL
+    COL_FLAGS, BASE_URL, STATES, NO_STYLE,
+    INCLUDE_HEADERS, COL_FLAGS_SPECIAL, MATCH
 )
 from governor.scraper.clean_state import clean_state
 from selenium import webdriver
@@ -100,11 +101,15 @@ def get_state_df_from_wikipedia(state_to_scrape, col_flags=COL_FLAGS):
                     continue
                 else:
                     starting_year = cols[row_key["term"]].text.strip().split(",")[1].strip()[:4]
+                    if row_key["term2"] == "no data":
+                        term = cols[row_key["term"]].text.strip()
+                    else:
+                        term = cols[row_key["term"]].text.strip() + " - " + cols[row_key["term2"]].text.strip()
 
                 df = pd.DataFrame(
                         {
                             "order": [len(scraped_state_df)],
-                            "term": [cols[row_key["term"]].text.strip()],
+                            "term": [term],
                             "party": [party],
                             "starting_year": [starting_year],
                         }
@@ -127,7 +132,6 @@ def identify_row(cols, col_flags):
         key[col] = "no data"
     # match the columns to their locations by header
     for cell, idx in zip(cols, range(0, len(cols))):
-        import pdb; pdb.set_trace()
         if "data-sort-value" in cell.attrs.keys():
             if key["name"] == "no data":
                 key["name"] = idx
@@ -135,9 +139,14 @@ def identify_row(cols, col_flags):
             this_col = cell.text.strip()
             for col in key.keys():
                 if key[col] == "no data":
-                    if re.search(col_flags[col], this_col):
-                        key[col] = idx
-                        break
+                    if col in MATCH:
+                        if re.match(col_flags[col], this_col):
+                            key[col] = idx
+                            break
+                    else:
+                        if re.search(col_flags[col], this_col):
+                            key[col] = idx
+                            break
         if key["war"] != "no data":
             break
     return key
