@@ -16,7 +16,7 @@ def scrape_all_states(out_path):
     all_states = pd.DataFrame()
     errors = []
     # for state in STATES.keys():
-    for state in ["Montana", "Nevada", "Washington", 'Nebraska', 'New Hampshire', 'New Mexico', 'North Carolina', 'North Dakota', 'South Carolina', 'South Dakota', 'Vermont', 'Virginia']:
+    for state in ['New Hampshire', 'New Mexico', 'North Carolina', 'North Dakota', 'South Carolina', 'South Dakota', 'Vermont', 'Virginia']:
         try:
             cleaned_state_df = scrape_state(state)
             all_states = all_states.append(cleaned_state_df)
@@ -127,6 +127,7 @@ def identify_row(cols, col_flags):
         key[col] = "no data"
     # match the columns to their locations by header
     for cell, idx in zip(cols, range(0, len(cols))):
+        import pdb; pdb.set_trace()
         if "data-sort-value" in cell.attrs.keys():
             if key["name"] == "no data":
                 key["name"] = idx

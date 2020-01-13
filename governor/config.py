@@ -64,7 +64,7 @@ COL_FLAGS = {
             "July |August |"
             "September |October |November |December ",
     "name": "\A[A-Z]",
-    "party": "(\w\D)",
+    "party": "(\w\D)&(\D\w)",
 }
 
 # These are wikipedia pages with tables that are different from most and need some help.
@@ -73,7 +73,8 @@ NO_STYLE = {
     "Missouri": 5,
     "Montana": 2,
     "Nevada": 1,
-    "Nebraska": 2
+    "Nebraska": 2,
+    "New Hampshire": 2
 }
 
 INCLUDE_HEADERS = [
@@ -82,24 +83,14 @@ INCLUDE_HEADERS = [
 
 COL_FLAGS_SPECIAL = {
     "Nevada": {
-        "war": "civil war|Civil War|military|occupation",
-        "name": "\A[A-Z]",
-        "term": "Years|Term of office|Term in office|term|limited|"
-                "Jan |Feb |Mar |Apr |May |Jun |Jul |Aug |Sep |Oct |Nov |Dec |January |February |March |April |May |June |"
-                "July |August |"
-                "September |October |November |December ",
-        "party": "(\w\D)",
-    },
-    "Washington": {
-        "war": "civil war|Civil War|military|occupation",
-        "name": "\A[A-Z]",
-        "term": "Years|Term of office|Term in office|term|limited|"
-                "Jan |Feb |Mar |Apr |May |Jun |Jul |Aug |Sep |Oct |Nov |Dec |January |February |March |April |May |June |"
-                "July |August |"
-                "September |October |November |December ",
-        "party": "(\w\D)",
+        "war": COL_FLAGS["war"],
+        "name": COL_FLAGS["name"],
+        "term": COL_FLAGS["term"],
+        "party": COL_FLAGS["party"],
     },
 }
+COL_FLAGS_SPECIAL["Washington"] = COL_FLAGS_SPECIAL["Nevada"]
+
 
 
 ## TODO
