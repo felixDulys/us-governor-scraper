@@ -17,11 +17,11 @@ def scrape_all_states(out_path):
     all_states = pd.DataFrame()
     errors = []
     # for state in STATES.keys():
-    for state in ['New Hampshire', 'New Mexico', 'North Carolina', 'North Dakota', 'South Carolina', 'South Dakota', 'Vermont', 'Virginia']:
+    for state in ['New Mexico', 'North Carolina', 'North Dakota', 'South Carolina', 'South Dakota', 'Vermont', 'Virginia']:
         try:
             cleaned_state_df = scrape_state(state)
             all_states = all_states.append(cleaned_state_df)
-            all_states.to_csv(f"{out_path}all_states_governors_sample_nolt.csv", index=False)
+            all_states.to_csv(f"{out_path}all_states_governors_sample_0122_02.csv", index=False)
         except:
             errors += [state]
     print(f"done. errors were {errors}")
@@ -58,8 +58,6 @@ def get_state_df_from_wikipedia(state_to_scrape, col_flags=COL_FLAGS):
             if (len(table.attrs) >= 1) & ("style" in table.attrs.keys()):
                 if ("wikitable" in table.attrs["class"][0]) & ("text-align:" in table.attrs["style"]):
                     match = table
-            # else:
-            #     continue
 
     if match is not None:
         table_body = match.find('tbody')
@@ -162,4 +160,11 @@ def set_up_browser(state_to_scrape):
     soup = BeautifulSoup(browser.page_source, 'lxml')
     return soup, browser
 
+##
+# state_to_scrape = ""
+# col_flags = COL_FLAGS
+#
+#
+# # if Nevada, Washington
+# col_flags = COL_FLAGS_SPECIAL[state_to_scrape]
 

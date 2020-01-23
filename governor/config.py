@@ -87,6 +87,7 @@ COL_FLAGS_SPECIAL = {
         "war": COL_FLAGS["war"],
         "name": COL_FLAGS["name"],
         "term": COL_FLAGS["term"],
+        "term2": COL_FLAGS["term2"],
         "party": COL_FLAGS["party"],
     },
 }
