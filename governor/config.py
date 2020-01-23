@@ -73,14 +73,21 @@ NO_STYLE = {
     "Missouri": 5,
     "Montana": 2,
     "Nevada": 1,
+    "North Carolina": 1,
+    "North Dakota": 1,
     "Nebraska": 2,
-    "New Hampshire": 2
+    "New Hampshire": 2,
+    "South Carolina": 1, # tables 1 - 6 are relevant.
+    "South Dakota": 1,
+    "Vermont": 2,
+    "Virginia": 3
 }
 
 INCLUDE_HEADERS = [
     "Montana"
 ]
 
+# todo make this not shit
 # order changed for special snowflakes
 COL_FLAGS_SPECIAL = {
     "Nevada": {
@@ -92,6 +99,15 @@ COL_FLAGS_SPECIAL = {
     },
 }
 COL_FLAGS_SPECIAL["Washington"] = COL_FLAGS_SPECIAL["Nevada"]
+COL_FLAGS_SPECIAL["New Mexico"] = COL_FLAGS_SPECIAL["Nevada"]
+COL_FLAGS_SPECIAL["North Carolina"] = COL_FLAGS_SPECIAL["Nevada"]
+COL_FLAGS_SPECIAL["South Carolina"] = COL_FLAGS_SPECIAL["Nevada"]
+COL_FLAGS_SPECIAL["North Dakota"] = COL_FLAGS_SPECIAL["Nevada"]
+COL_FLAGS_SPECIAL["South Dakota"] = COL_FLAGS_SPECIAL["Nevada"]
+COL_FLAGS_SPECIAL["Vermont"] = COL_FLAGS_SPECIAL["Nevada"]
+COL_FLAGS_SPECIAL["Virginia"] = COL_FLAGS_SPECIAL["Nevada"]
+
+
 
 MATCH = ["name", "party"]
 

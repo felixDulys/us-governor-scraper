@@ -14,18 +14,26 @@ import re
 
 def scrape_all_states(out_path):
     print("Initializing all state scrape.")
-    all_states = pd.DataFrame()
+    latest_df = pd.DataFrame()
     errors = []
-    # for state in STATES.keys():
-    for state in ['New Mexico', 'North Carolina', 'North Dakota', 'South Carolina', 'South Dakota', 'Vermont', 'Virginia']:
+    for state in STATES.keys():
         try:
-            cleaned_state_df = scrape_state(state)
-            all_states = all_states.append(cleaned_state_df)
-            all_states.to_csv(f"{out_path}all_states_governors_sample_0122_02.csv", index=False)
+            while (state == "South Carolina") & (NO_STYLE["South Carolina"] < 6):
+                NO_STYLE["South Carolina"] += 1
+                latest_df = latest(state, latest_df, out_path)
+                print(NO_STYLE["South Carolina"])
+            if state != "South Carolina":
+                latest_df = latest(state, latest_df, out_path)
         except:
             errors += [state]
     print(f"done. errors were {errors}")
 
+
+def latest(state, latest_df, out_path):
+    cleaned_state_df = scrape_state(state)
+    latest_df = latest_df.append(cleaned_state_df)
+    latest_df.to_csv(f"{out_path}all_states_governors_sample_checkpoint.csv", index=False)
+    return latest_df
 
 def scrape_state(state_to_scrape):
     print(f"scraping {state_to_scrape}...")
@@ -49,11 +57,12 @@ def get_state_df_from_wikipedia(state_to_scrape, col_flags=COL_FLAGS):
     i = 0
     for table in tables:
         if state_to_scrape in NO_STYLE.keys():
-            if (len(table.attrs) >= 1) & ("wikitable" in table.attrs["class"][0]):
-                match = table
-                i += 1
-                if i == NO_STYLE[state_to_scrape]:
-                    break
+            if "class" in table.attrs.keys():
+                if (len(table.attrs) >= 1) & ("wikitable" in table.attrs["class"][0]):
+                    match = table
+                    i += 1
+                    if i == NO_STYLE[state_to_scrape]:
+                        break
         else:
             if (len(table.attrs) >= 1) & ("style" in table.attrs.keys()):
                 if ("wikitable" in table.attrs["class"][0]) & ("text-align:" in table.attrs["style"]):
@@ -98,7 +107,10 @@ def get_state_df_from_wikipedia(state_to_scrape, col_flags=COL_FLAGS):
                 if row_key["term"] == "no data":
                     continue
                 else:
-                    starting_year = cols[row_key["term"]].text.strip().split(",")[1].strip()[:4]
+                    if cols[row_key["term"]].text.strip().find(",") != -1:
+                        starting_year = cols[row_key["term"]].text.strip().split(",")[1].strip()[:4]
+                    else:
+                        starting_year = cols[row_key["term"]].text.strip().split(" ")[1].strip()[:4]
                     if row_key["term2"] == "no data":
                         term = cols[row_key["term"]].text.strip()
                     else:
@@ -160,8 +172,9 @@ def set_up_browser(state_to_scrape):
     soup = BeautifulSoup(browser.page_source, 'lxml')
     return soup, browser
 
+
 ##
-# state_to_scrape = ""
+# state_to_scrape = "New Mexico"
 # col_flags = COL_FLAGS
 #
 #
