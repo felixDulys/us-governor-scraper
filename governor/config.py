@@ -107,8 +107,6 @@ COL_FLAGS_SPECIAL["South Dakota"] = COL_FLAGS_SPECIAL["Nevada"]
 COL_FLAGS_SPECIAL["Vermont"] = COL_FLAGS_SPECIAL["Nevada"]
 COL_FLAGS_SPECIAL["Virginia"] = COL_FLAGS_SPECIAL["Nevada"]
 
-
-
 MATCH = ["name", "party"]
 
 ## TODO

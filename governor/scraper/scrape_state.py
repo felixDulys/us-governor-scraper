@@ -35,6 +35,7 @@ def latest(state, latest_df, out_path):
     latest_df.to_csv(f"{out_path}all_states_governors_sample_checkpoint.csv", index=False)
     return latest_df
 
+
 def scrape_state(state_to_scrape):
     print(f"scraping {state_to_scrape}...")
     if state_to_scrape in COL_FLAGS_SPECIAL.keys():
@@ -171,13 +172,3 @@ def set_up_browser(state_to_scrape):
     time.sleep(1)
     soup = BeautifulSoup(browser.page_source, 'lxml')
     return soup, browser
-
-
-##
-# state_to_scrape = "New Mexico"
-# col_flags = COL_FLAGS
-#
-#
-# # if Nevada, Washington
-# col_flags = COL_FLAGS_SPECIAL[state_to_scrape]
-
