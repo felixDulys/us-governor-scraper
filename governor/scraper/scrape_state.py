@@ -12,7 +12,7 @@ import re
 # todo: go back and hard code parties for accuracy
 
 
-def scrape_all_states(out_path):
+def scrape_all_states(out_path, date):
     print("Initializing all state scrape.")
     latest_df = pd.DataFrame()
     errors = []
@@ -26,6 +26,7 @@ def scrape_all_states(out_path):
                 latest_df = latest(state, latest_df, out_path)
         except:
             errors += [state]
+    latest_df.to_csv(f"{out_path}all_states_governors_{date}.csv", index=False)
     print(f"done. errors were {errors}")
 
 

@@ -5,8 +5,8 @@ OUT_PATH = "~/dta/political/governors/"
 DATE = datetime.datetime.now().strftime("%Y-%m-%d")
 
 
-def main(out_path=OUT_PATH):
-    scrape_all_states(out_path)
+def main(out_path=OUT_PATH, date=DATE):
+    scrape_all_states(out_path, date)
 
 
 if __name__ == "__main__":
